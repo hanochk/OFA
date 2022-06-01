@@ -94,29 +94,20 @@ def main(cfg: DictConfig, **kwargs):
     #     cfg.checkpoint.checkpoint_suffix,
     #     cfg.checkpoint.checkpoint_shard_count, cfg.checkpoint.checkpoint_shard_count)
 
-    models, saved_cfg, task = checkpoint_utils.load_model_ensemble_and_task(
-        utils.split_paths(cfg.common_eval.path),
-        arg_overrides=overrides,
-        suffix=cfg.checkpoint.checkpoint_suffix,
-        strict=(cfg.checkpoint.checkpoint_shard_count == 1),
-        num_shards=cfg.checkpoint.checkpoint_shard_count,
-    )
+    # models, saved_cfg, task = checkpoint_utils.load_model_ensemble_and_task(
+    #     utils.split_paths(cfg.common_eval.path),
+    #     arg_overrides=overrides,
+    #     suffix=cfg.checkpoint.checkpoint_suffix,
+    #     strict=(cfg.checkpoint.checkpoint_shard_count == 1),
+    #     num_shards=cfg.checkpoint.checkpoint_shard_count,
+    # )
  # OFA visual grounding over LSMDC + likelihood over BB
     # loading the dataset should happen after the checkpoint has been loaded so we can give it the saved task config
     inference_pipeline = kwargs.pop("inference_pipeline", False)
     if inference_pipeline:  # HK added switch for inference per loaded image rather than COCO packed dataset
         patch_resize_transform = inference_preprocess(cfg, task)
-    # Download an image from COCO or you can use other images with wget
-    #     os.system("! wget     http: // farm4.staticflickr.com / 3539 / 3836680545_2     ccb331621_z.jpg")
-    #     os.system("! mv     3836680545_2     ccb331621_z.jpg     test.jpg")
-    #     image = Image.open('./test.jpg')
         path_lsmdc = '../../lsmdc_s1_gt_mdf'
         df_lsmdc = pd.read_csv(os.path.join(path_lsmdc, "lsmdc_meta.csv"), index_col=False)
-        # example from colab
-        # image = Image.open('../../dataset/caption_data/COCO_train2014_000000292160.jpg')
-        # # Construct input sample & preprocess for GPU if cuda available
-        # text = "a blue turtle-like pokemon with round head"
-
         patch_image_size = cfg.task.patch_image_size
     else:
         task.load_dataset(cfg.dataset.gen_subset, task_cfg=saved_cfg.task)
@@ -234,7 +225,7 @@ def main(cfg: DictConfig, **kwargs):
             print("HK: sample", sample.keys())
             # print("sample", sample)
             with torch.no_grad():
-                result, scores = eval_step(task, generator, models, sample, **kwargs)
+                result, scores, lprob = eval_step(task, generator, models, sample, **kwargs)
                 print("result", result[0].keys())
                 print("scores", scores)
                 print("uniq_id", result[0]["uniq_id"])
