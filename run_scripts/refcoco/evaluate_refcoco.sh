@@ -2,20 +2,37 @@
 
 # The port for communication. Note that if you want to run multiple tasks on the same machine,
 # you need to specify different port numbers.
-export MASTER_PORT=6081
-export CUDA_VISIBLE_DEVICES=4,5,6,7
-export GPUS_PER_NODE=4
+# HK was default
+#export MASTER_PORT=6081
+#export CUDA_VISIBLE_DEVICES=4,5,6,7
+#export GPUS_PER_NODE=4
 
+export MASTER_PORT=6081
+export CUDA_VISIBLE_DEVICES=0
+export GPUS_PER_NODE=1
 
 ########################## Evaluate Refcoco ##########################
-user_dir=../../ofa_module
+#user_dir=../../ofa_module
+user_dir=../../models/ofa/ofa_module
 bpe_dir=../../utils/BPE
 selected_cols=0,4,2,3
-
 data=../../dataset/refcoco_data/refcoco_val.tsv
 path=../../checkpoints/refcoco_large_best.pt
 result_path=../../results/refcoco
 split='refcoco_val'
+
+#path=../../checkpoints/ofa_large.pt
+
+
+#data=../../dataset/refcoco_data/refcoco_testA.tsv
+#split='refcoco_testA'
+#
+#
+#data=../../dataset/refcocoplus_data/refcocoplus_val.tsv
+#path=../../checkpoints/refcocoplus_large_best.pt
+#result_path=../../results/refcocoplus
+#split='refcocoplus_val'
+
 python3 -m torch.distributed.launch --nproc_per_node=${GPUS_PER_NODE} --master_port=${MASTER_PORT} ../../evaluate.py \
     ${data} \
     --path=${path} \
@@ -33,8 +50,9 @@ python3 -m torch.distributed.launch --nproc_per_node=${GPUS_PER_NODE} --master_p
     --no-repeat-ngram-size=3 \
     --fp16 \
     --num-workers=0 \
+    --inference-pipeline \
     --model-overrides="{\"data\":\"${data}\",\"bpe_dir\":\"${bpe_dir}\",\"selected_cols\":\"${selected_cols}\"}"
-
+exit 0
 data=../../dataset/refcoco_data/refcoco_testA.tsv
 path=../../checkpoints/refcoco_large_best.pt
 result_path=../../results/refcoco

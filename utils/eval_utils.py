@@ -130,9 +130,10 @@ def eval_refcoco(task, generator, models, sample, **kwargs):
     gen_out = task.inference_step(generator, models, sample)
     hyps = []
     for i in range(len(gen_out)):
-        hyps.append(gen_out[i][0]["tokens"][:-1] - len(task.src_dict) + task.cfg.num_bins)
+        hyps.append(gen_out[i][0]["tokens"][:-1] - len(task.src_dict) + task.cfg.num_bins)  # HK the zeroth gen_out
     hyps = torch.stack(hyps, dim=0)
     hyps = hyps / (task.cfg.num_bins - 1) * task.cfg.max_image_size
+    # print("HK sample['w_resize_ratios']", sample['w_resize_ratios'].shape)
     hyps[:, ::2] /= sample['w_resize_ratios'].unsqueeze(1)
     hyps[:, 1::2] /= sample['h_resize_ratios'].unsqueeze(1)
 
@@ -142,7 +143,9 @@ def eval_refcoco(task, generator, models, sample, **kwargs):
         for i, sample_id in enumerate(sample["id"].tolist())
     ]
     scores = _calculate_ap_score(hyps, sample['region_coords'].float())
-    return results, scores
+    # sm_score = torch.softmax(torch.tensor([gen_out[0][x]['score'].cpu() for x in range(len(gen_out[0]))]), axis=0)
+    lprob = torch.tensor([x for x in gen_out[0][0]['positional_scores']])[:-1] # Normally, the output of VG contains 5 tokens: <loc_x0> <loc_y0> <loc_x1> <loc_y1> <eos>, so finalized[0][0]['positional_scores'][0] represents the score of <loc_x0>, finalized[0][0]['positional_scores'][1] represents the score of <loc_y0>, and so on.
+    return results, scores, lprob # HK score is relate dto IOU with GT and not the decoder/transformer score
 
 
 def eval_snli_ve(task, generator, models, sample, **kwargs):
