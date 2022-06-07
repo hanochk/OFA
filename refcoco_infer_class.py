@@ -21,7 +21,7 @@ use_cuda = torch.cuda.is_available()
 use_fp16 = False
 
 
-class OFA_LOADER():
+class OfaMultiModalVisualGrounding():
 
     def __init__(self):
         # Register caption task
@@ -141,13 +141,13 @@ class OFA_LOADER():
 
 
 if __name__ == '__main__':
-    ofa_loader = OFA_LOADER()
+    ofa_vg = OfaMultiModalVisualGrounding()
 
     image = Image.open('../../pokemon.jpg')
     text = "a blue turtle-like pokemon with round head"
 
 
-    result, scores, lprob = ofa_loader.find_visual_grounding(image, text)
+    result, scores, lprob = ofa_vg.find_visual_grounding(image, text)
 
 
 
