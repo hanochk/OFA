@@ -24,15 +24,11 @@ use_fp16 = False
 class OfaMultiModalVisualGrounding():
 
     def __init__(self):
-        # Register caption task
-        # tasks.register_task('caption',CaptionTask)
-
         # turn on cuda if GPU is available
         self.use_cuda = torch.cuda.is_available()
         # use fp16 only when GPU is available
         use_fp16 = False
 
-        bpe_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "./../utils/BPE")
         # Load pretrained ckpt & config
         overrides = {"bpe_dir": "../../utils/BPE"}
         self.models, cfg, self.task = checkpoint_utils.load_model_ensemble_and_task(
@@ -40,12 +36,12 @@ class OfaMultiModalVisualGrounding():
             arg_overrides=overrides
         )
 
-        cfg.common.seed = 7
-        cfg.generation.beam = 5
-        cfg.generation.min_len = 4
-        cfg.generation.max_len_a = 0
-        cfg.generation.max_len_b = 4
-        cfg.generation.no_repeat_ngram_size = 3
+        cfg.common.seed = int(os.getenv('seed', '7'))
+        cfg.generation.beam = int(os.getenv('generation_beam', '5'))
+        cfg.generation.min_len = int(os.getenv('min_len', '4'))
+        cfg.generation.max_len_a = int(os.getenv('max_len_a', '0'))
+        cfg.generation.max_len_b = int(os.getenv('max_len_b', '4'))
+        cfg.generation.no_repeat_ngram_size = int(os.getenv('no_repeat_ngram_size', '3'))
 
         # Fix seed for stochastic decoding
         if cfg.common.seed is not None and not cfg.generation.no_seed_provided:
