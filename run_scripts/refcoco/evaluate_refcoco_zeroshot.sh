@@ -14,7 +14,7 @@ selected_cols=0,4,2,3
 data=../../dataset/refcoco_data/refcoco_val.tsv
 path=../../checkpoints/ofa_large.pt
 result_path=../../results/refcoco
-split='refcoco_val'
+split='refcoco_model_ofa_large'
 
 
 python3 -m torch.distributed.launch --nproc_per_node=${GPUS_PER_NODE} --master_port=${MASTER_PORT} ../../evaluate.py \
@@ -37,4 +37,5 @@ python3 -m torch.distributed.launch --nproc_per_node=${GPUS_PER_NODE} --master_p
     --no-repeat-ngram-size=3 \
     --zero-shot \
     --fp16 \
+    --inference-pipeline \
     --num-workers=0
